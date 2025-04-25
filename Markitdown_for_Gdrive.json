@@ -1,0 +1,412 @@
+{
+  "name": "Markitdown for Gdrive",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1SgZKA0IPm_takPyJvIZaXQYtrNKopLNk",
+          "mode": "list",
+          "cachedResultName": "n8n",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1SgZKA0IPm_takPyJvIZaXQYtrNKopLNk"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "4bb98287-b0fc-4b34-8cf0-f0870cf313e6",
+      "name": "Google Drive Trigger",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "position": [
+        440,
+        440
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "pptj4UXBmjIXlf4j",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "options": {
+          "binaryPropertyName": "data",
+          "fileName": "={{ $json.originalFilename }}"
+        }
+      },
+      "id": "29cb5298-7ac5-420d-8c03-a6881c94a6a5",
+      "name": "Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        680,
+        440
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "pptj4UXBmjIXlf4j",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Trigger and Download of audio file\n\nIn this example I'm using Google Drive. \nAs soon as a audio file is uploaded the trigger will start and download the audio file. ",
+        "height": 425.9351190986499,
+        "width": 459.0695038476583
+      },
+      "id": "1acbd9bc-5418-440b-8a61-e86065edc72e",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        380,
+        240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "name": "={{ $binary.data.fileName }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1S_fPi2b6zdQhRzab6Z9bVp1HgJRTvYh6",
+          "mode": "list",
+          "cachedResultName": "n8n-out",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1S_fPi2b6zdQhRzab6Z9bVp1HgJRTvYh6"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1400,
+        440
+      ],
+      "id": "73c13999-5245-4f00-be38-2834dc64b909",
+      "name": "Google Drive1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "pptj4UXBmjIXlf4j",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://openvpn.glsoft.ai:8000/convert",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        920,
+        440
+      ],
+      "id": "276b0e38-c3bb-424c-ae54-7d4b3c6270bd",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst content = $json.result || '# 預設標題\\n\\n內容...';\nconst buffer = Buffer.from(content, 'utf8');\n\nreturn [\n  {\n    binary: {\n      data: {\n        data: buffer.toString('base64'),\n        mimeType: 'text/markdown',\n        fileName: `note_${Date.now()}.md`\n      }\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1180,
+        440
+      ],
+      "id": "999dd449-027f-48c4-b210-09e95f5752e1",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "content": "## upload markdown file\n",
+        "height": 425.9351190986499,
+        "width": 459.0695038476583
+      },
+      "id": "f51849e1-6068-4999-aad8-83f6b86e91ea",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1120,
+        240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "move",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Google Drive').item.json.id }}",
+          "mode": "id"
+        },
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1wBV2frkZdeGajPh4mB_Ovjh1tqxkUv_o",
+          "mode": "list",
+          "cachedResultName": "n8n-done",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1wBV2frkZdeGajPh4mB_Ovjh1tqxkUv_o"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1620,
+        440
+      ],
+      "id": "7d39d072-8726-40d5-bb00-35ccb2f8210a",
+      "name": "Google Drive2",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "pptj4UXBmjIXlf4j",
+          "name": "Google Drive account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Google Drive Trigger": [
+      {
+        "json": {
+          "kind": "drive#file",
+          "fileExtension": "mp3",
+          "copyRequiresWriterPermission": false,
+          "md5Checksum": "206065cd2870e5455c01070023cd8415",
+          "writersCanShare": true,
+          "viewedByMe": true,
+          "mimeType": "audio/mpeg",
+          "parents": [
+            "1SgZKA0IPm_takPyJvIZaXQYtrNKopLNk"
+          ],
+          "iconLink": "https://drive-thirdparty.googleusercontent.com/16/type/audio/mpeg",
+          "shared": true,
+          "lastModifyingUser": {
+            "displayName": "David Chiang",
+            "kind": "drive#user",
+            "me": true,
+            "permissionId": "08124474139647996585",
+            "emailAddress": "oobwei@gmail.com",
+            "photoLink": "https://lh3.googleusercontent.com/a/ACg8ocJJ6cr4F_Z4usLfSD4lT1E9RNUxoX_RcRjzyl-0beVmg5CIq08Rog=s64"
+          },
+          "owners": [
+            {
+              "displayName": "David Chiang",
+              "kind": "drive#user",
+              "me": true,
+              "permissionId": "08124474139647996585",
+              "emailAddress": "oobwei@gmail.com",
+              "photoLink": "https://lh3.googleusercontent.com/a/ACg8ocJJ6cr4F_Z4usLfSD4lT1E9RNUxoX_RcRjzyl-0beVmg5CIq08Rog=s64"
+            }
+          ],
+          "headRevisionId": "0B3FT7KY-QmcRVXdLYVA1bGJHRU9FWUt1UUFrTDc2aFBVTHc0PQ",
+          "webViewLink": "https://drive.google.com/file/d/1owS47tseiJHX4T477RIIJVi-c4TU5HXk/view?usp=drivesdk",
+          "webContentLink": "https://drive.google.com/uc?id=1owS47tseiJHX4T477RIIJVi-c4TU5HXk&export=download",
+          "size": "11313120",
+          "viewersCanCopyContent": true,
+          "permissions": [
+            {
+              "id": "anyoneWithLink",
+              "type": "anyone",
+              "kind": "drive#permission",
+              "role": "writer",
+              "allowFileDiscovery": false
+            },
+            {
+              "id": "08124474139647996585",
+              "displayName": "David Chiang",
+              "type": "user",
+              "kind": "drive#permission",
+              "photoLink": "https://lh3.googleusercontent.com/a/ACg8ocJJ6cr4F_Z4usLfSD4lT1E9RNUxoX_RcRjzyl-0beVmg5CIq08Rog=s64",
+              "emailAddress": "oobwei@gmail.com",
+              "role": "owner",
+              "deleted": false,
+              "pendingOwner": false
+            }
+          ],
+          "hasThumbnail": false,
+          "spaces": [
+            "drive"
+          ],
+          "id": "1owS47tseiJHX4T477RIIJVi-c4TU5HXk",
+          "name": "002數據標注市場.mp3",
+          "starred": false,
+          "trashed": false,
+          "explicitlyTrashed": false,
+          "createdTime": "2025-04-25T04:46:43.324Z",
+          "modifiedTime": "2024-09-27T04:07:01.000Z",
+          "modifiedByMeTime": "2024-09-27T04:07:01.000Z",
+          "viewedByMeTime": "2025-04-25T04:46:43.324Z",
+          "quotaBytesUsed": "11313120",
+          "version": "1",
+          "originalFilename": "002數據標注市場.mp3",
+          "ownedByMe": true,
+          "fullFileExtension": "mp3",
+          "isAppAuthorized": false,
+          "capabilities": {
+            "canChangeViewersCanCopyContent": true,
+            "canEdit": true,
+            "canCopy": true,
+            "canComment": true,
+            "canAddChildren": false,
+            "canDelete": true,
+            "canDownload": true,
+            "canListChildren": false,
+            "canRemoveChildren": false,
+            "canRename": true,
+            "canTrash": true,
+            "canReadRevisions": true,
+            "canChangeCopyRequiresWriterPermission": true,
+            "canMoveItemIntoTeamDrive": true,
+            "canUntrash": true,
+            "canModifyContent": true,
+            "canMoveItemOutOfDrive": true,
+            "canAddMyDriveParent": false,
+            "canRemoveMyDriveParent": true,
+            "canMoveItemWithinDrive": true,
+            "canShare": true,
+            "canMoveChildrenWithinDrive": false,
+            "canModifyContentRestriction": true,
+            "canChangeSecurityUpdateEnabled": false,
+            "canAcceptOwnership": false,
+            "canReadLabels": false,
+            "canModifyLabels": false,
+            "canModifyEditorContentRestriction": true,
+            "canModifyOwnerContentRestriction": true,
+            "canRemoveContentRestriction": false,
+            "canDisableInheritedPermissions": false,
+            "canEnableInheritedPermissions": true
+          },
+          "thumbnailVersion": "0",
+          "modifiedByMe": true,
+          "permissionIds": [
+            "anyoneWithLink",
+            "08124474139647996585"
+          ],
+          "linkShareMetadata": {
+            "securityUpdateEligible": false,
+            "securityUpdateEnabled": true
+          },
+          "sha1Checksum": "e28e4c250115dca92662fd434fe9f050512beda1",
+          "sha256Checksum": "543d155b44a2dc0a7010354818fe27bf05dd65e932c8625162b6284596cc8a42",
+          "inheritedPermissionsDisabled": false
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Google Drive": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Google Drive1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive1": {
+      "main": [
+        [
+          {
+            "node": "Google Drive2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4540490c-1e71-46f7-84f5-570d13c33484",
+  "meta": {
+    "templateId": "2178",
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5d07bf0e64963a81e13590ef97d27c7e465d7dc6f79e66845af269cf3f40d119"
+  },
+  "id": "sZ6c0b4qdxjCpCvh",
+  "tags": []
+}
